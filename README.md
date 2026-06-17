@@ -75,6 +75,18 @@ Visit `http://localhost:3000`.
 | Interview Coach Agent | Generates interview prep pack |
 | Career Readiness Agent | Computes readiness score + projections |
 
+## Setup
+
+Create a .env file inside backend using .env.example
+
+Frontend:
+npm install
+npm run dev
+
+Backend:
+pip install -r requirements.txt
+uvicorn main:app --reload
+
 ## Safety
 
 Every agent output includes `confidence`, `reasoning`, `assumptions`, and
