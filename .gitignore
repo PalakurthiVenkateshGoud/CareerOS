@@ -1,39 +1,15 @@
-# Frontend
-node_modules
-.next
-out
+# Frontend / Next.js
+node_modules/
+.next/
+out/
 
 # Python
-__pycache__
+__pycache__/
 *.pyc
-venv
-.venv
+venv/
+.venv/
 
-# Environment variables
-.env
-.env.local
-.env.*
-
-# Logs
-*.log
-
-# VS Code
-.vscode
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Database
-*.db
-
-# LLM Cache
-.llm_cache.json
-
-# Old frontend backup
-frontend_old/
-
-# Secrets
+# Environment variables / Secrets
 .env
 .env.local
 .env.*
@@ -43,17 +19,18 @@ backend/.env
 *.db
 
 # Cache
+.llm_cache.json
 backend/.llm_cache.json
 
-# Old frontend
+# Logs
+*.log
+
+# VS Code
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Old backup folders
 frontend_old/
-
-# Python
-__pycache__/
-*.pyc
-.venv/
-venv/
-
-# Next.js
-.next/
-node_modules/
