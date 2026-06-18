@@ -80,11 +80,17 @@ class RoleResearchAgent(BaseAgent):
 
     @staticmethod
     def _has_real_content(result: dict) -> bool:
-        """Reject a well-formed but empty role blueprint."""
+        """Reject a well-formed but empty role blueprint, or one that just
+        echoed the schema's placeholder text back."""
         blueprint = result.get("role_blueprint", {})
         if not isinstance(blueprint, dict):
             return False
-        return bool(blueprint.get("required_skills"))
+        skills = blueprint.get("required_skills")
+        if not skills:
+            return False
+        if any(RoleResearchAgent._looks_like_placeholder(s) for s in skills):
+            return False
+        return True
 
 
 role_research_agent = RoleResearchAgent()

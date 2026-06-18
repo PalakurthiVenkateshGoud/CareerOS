@@ -446,6 +446,16 @@ class BaseAgent(ABC):
 
         return None
 
+    @staticmethod
+    def _looks_like_placeholder(text) -> bool:
+        """
+        True if text still contains the literal word 'example' — a sign the
+        model echoed the schema's placeholder text back instead of
+        replacing it with real content. Used by agent validators as an
+        extra guard alongside the empty/missing-field checks.
+        """
+        return isinstance(text, str) and "example" in text.lower()
+
     @abstractmethod
     async def run(self, *args, **kwargs) -> AgentResult:
         ...

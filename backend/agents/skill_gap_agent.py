@@ -39,15 +39,17 @@ class SkillGapAgent(BaseAgent):
             "The example values above are placeholders showing the required "
             "shape only. Replace every placeholder with real, specific "
             "skill names based on the actual profile and role blueprint "
-            "given.\n"
+            "given. Never echo back the literal placeholder text.\n"
             "strengths, missing_skills, and partial_skills must be plain "
             "skill-name strings (not objects).\n"
-            "Return 2 to 6 priority_gaps. Every priority_gaps item MUST "
-            "include a non-empty 'skill', an 'importance' integer from 1 to "
-            "10, and a non-empty 'description' — never omit any of these "
-            "three fields.\n"
-            "Only return an empty list for a category if it is genuinely "
-            "not applicable, which should be rare."
+            "priority_gaps is the most important field — it drives the "
+            "dashboard's main skill gap display. Return 2 to 6 "
+            "priority_gaps no matter what; this list must never be left "
+            "empty even if strengths/missing_skills/partial_skills are "
+            "thin. Every priority_gaps item MUST include a non-empty "
+            "'skill', an 'importance' integer from 1 to 10, and a "
+            "non-empty 'description' — never omit any of these three "
+            "fields."
         )
 
         raw = await self.call_llm(
@@ -83,20 +85,29 @@ class SkillGapAgent(BaseAgent):
     @staticmethod
     def _has_real_content(result: dict) -> bool:
         """
-        Reject a well-formed but empty/useless skill gap result, and reject
-        priority_gaps items missing their skill name or importance.
+        priority_gaps is what SkillGapChart.tsx actually renders as the main
+        gap display — a result where only strengths/partial_skills has
+        content but priority_gaps is empty must be rejected, not accepted
+        just because "some" field was non-empty.
         """
-        has_any_list = any(
-            result.get(key) for key in ("strengths", "missing_skills", "partial_skills", "priority_gaps")
-        )
-        if not has_any_list:
+        priority_gaps = result.get("priority_gaps", [])
+        if not priority_gaps:
             return False
 
-        for gap in result.get("priority_gaps", []):
+        for gap in priority_gaps:
             if not isinstance(gap, dict):
                 return False
-            if not gap.get("skill") or gap.get("importance") is None:
+            skill = gap.get("skill")
+            if not skill or SkillGapAgent._looks_like_placeholder(skill):
                 return False
+            if gap.get("importance") is None:
+                return False
+
+        # A real analysis almost always finds either some matched skills or
+        # some genuinely missing ones (or both) — both being empty alongside
+        # a non-empty priority_gaps is a sign of a thin/lazy response.
+        if not result.get("strengths") and not result.get("missing_skills"):
+            return False
 
         return True
 

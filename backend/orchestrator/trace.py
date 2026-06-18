@@ -7,7 +7,6 @@ def log_step(agent_name: str, result: AgentResult) -> dict:
     shown in AgentTraceViewer on the frontend.
     """
     summary = _build_summary(agent_name, result.output)
-
     step = TraceStep(
         agent=agent_name,
         summary=summary,
@@ -24,10 +23,14 @@ def _build_summary(agent_name: str, output: dict) -> str:
     summaries = {
         "resume_agent": lambda o: f"Extracted {len(o.get('skills', {}).get('technical', []))} technical skills, "
                                    f"{len(o.get('projects', []))} projects.",
+        # Fixed: role_blueprint's actual field is "required_skills", not "core".
         "role_research_agent": lambda o: f"Built role blueprint with "
-                                          f"{len(o.get('role_blueprint', {}).get('core', []))} core skills.",
-        "skill_gap_agent": lambda o: f"Identified {len(o.get('gaps', []))} skill gaps, "
-                                     f"{len(o.get('matched_skills', []))} matched skills.",
+                                          f"{len(o.get('role_blueprint', {}).get('required_skills', []))} core skills.",
+        # Fixed: skill_gap_agent's actual fields are "priority_gaps" and "strengths",
+        # not "gaps" and "matched_skills" — this is why the trace always said
+        # "0 skill gaps, 0 matched skills" even when the dashboard showed real data.
+        "skill_gap_agent": lambda o: f"Identified {len(o.get('priority_gaps', []))} skill gaps, "
+                                     f"{len(o.get('strengths', []))} matched skills.",
         "career_twin_agent": lambda o: f"Generated Career Twin with "
                                        f"{len(o.get('future_you', []))} future skills.",
         "strategy_agent": lambda o: f"Defined {len(o.get('milestones', []))} strategic milestones.",
@@ -40,7 +43,6 @@ def _build_summary(agent_name: str, output: dict) -> str:
         "readiness_agent": lambda o: f"Current readiness: {o.get('current_readiness', '?')}%, "
                                      f"12-month projection: {o.get('projection', {}).get('12_months', '?')}%.",
     }
-
     builder = summaries.get(agent_name)
     if builder:
         try:

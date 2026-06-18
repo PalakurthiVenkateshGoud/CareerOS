@@ -64,72 +64,22 @@ export default function ConfigurePage() {
         hoursPerWeek
       );
 
-      const normalized = {
-        ...result,
-
-        career_twin: {
-          current_you:
-            result?.career_twin?.current_you?.map((item: any) =>
-              typeof item === "string"
-                ? item
-                : item.title ||
-                  item.skill ||
-                  item.description ||
-                  "Unknown"
-            ) || [],
-
-          future_you:
-            result?.career_twin?.future_you?.map((item: any) =>
-              typeof item === "string"
-                ? item
-                : item.title ||
-                  item.skill ||
-                  item.description ||
-                  "Unknown"
-            ) || [],
-
-          transformation_highlights:
-            result?.career_twin?.transformation_highlights?.map(
-              (item: any) =>
-                typeof item === "string"
-                  ? item
-                  : `${item.skill}: ${item.description}`
-            ) || [],
-        },
-
-        skill_gap: {
-          matched_skills:
-            result?.skill_gap?.strengths || [],
-
-          gaps:
-            result?.skill_gap?.priority_gaps?.map((gap: any) => ({
-              skill: gap.skill,
-
-              priority:
-                gap.importance >= 8
-                  ? "critical"
-                  : gap.importance >= 6
-                  ? "important"
-                  : "nice-to-have",
-
-              explanation: gap.description,
-            })) || [],
-        },
-      };
-
+      // Store the backend response as-is. The agent schemas already match
+      // exactly what CareerTwin.tsx and SkillGapChart.tsx read (current_you /
+      // future_you as {title, description} objects, transformation_highlights
+      // as {skill, status, description, importance} objects, and strengths /
+      // missing_skills / partial_skills / priority_gaps unchanged). A previous
+      // "normalization" step here was renaming and flattening these fields
+      // into a shape the components never read, which is why sections kept
+      // rendering blank no matter what the backend returned.
       sessionStorage.setItem(
         "dashboard_data",
-        JSON.stringify(normalized)
+        JSON.stringify(result)
       );
 
       sessionStorage.setItem(
         "target_role",
         targetRole.trim()
-      );
-
-      console.log(
-        "NORMALIZED DASHBOARD DATA",
-        normalized
       );
 
       router.push("/dashboard");

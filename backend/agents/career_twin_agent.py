@@ -82,15 +82,27 @@ class CareerTwinAgent(BaseAgent):
 
     @staticmethod
     def _has_real_content(result: dict) -> bool:
-        """Reject a well-formed but empty/blank career twin result."""
+        """Reject a well-formed but empty/blank career twin result, and
+        reject any result that just echoed the schema's placeholder text
+        back instead of replacing it with real content."""
         current = result.get("current_you", [])
         future = result.get("future_you", [])
         highlights = result.get("transformation_highlights", [])
 
         if not current or not isinstance(current[0], dict) or not current[0].get("description"):
             return False
+        if CareerTwinAgent._looks_like_placeholder(current[0].get("title")):
+            return False
+        if CareerTwinAgent._looks_like_placeholder(current[0].get("description")):
+            return False
+
         if not future or not isinstance(future[0], dict) or not future[0].get("description"):
             return False
+        if CareerTwinAgent._looks_like_placeholder(future[0].get("title")):
+            return False
+        if CareerTwinAgent._looks_like_placeholder(future[0].get("description")):
+            return False
+
         if not highlights:
             return False
 
@@ -98,6 +110,10 @@ class CareerTwinAgent(BaseAgent):
             if not isinstance(item, dict):
                 return False
             if not item.get("skill") or not item.get("description"):
+                return False
+            if CareerTwinAgent._looks_like_placeholder(item.get("skill")):
+                return False
+            if CareerTwinAgent._looks_like_placeholder(item.get("description")):
                 return False
             if item.get("importance") is None:
                 return False
